@@ -7,6 +7,7 @@ import java.util.List;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,8 @@ import com.paulg.exception.ModelNotFoundException;
 import com.paulg.model.Tienda;
 import com.paulg.service.ITiendaProductosService;
 import com.paulg.service.ITiendaService;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
 
 @RestController
 @RequestMapping("/tiendas")
@@ -32,18 +35,15 @@ public class TiendaController {
 
 	@Autowired
 	private ITiendaService service;
-	
+
 	@Autowired
 	private ITiendaProductosService tiendaProductoService;
-	
+
 	@PostMapping(value = "/setproductos", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Object> registrar(@Valid @RequestBody TiendaProductosDTO dto) {
 
 		Tienda c = tiendaProductoService.registrar(dto);
-		URI location = ServletUriComponentsBuilder
-				.fromCurrentRequest()
-				.path("/{id}")
-				.buildAndExpand(c.getIdTienda())
+		URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(c.getIdTienda())
 				.toUri();
 
 		return ResponseEntity.created(location).build();
@@ -69,10 +69,7 @@ public class TiendaController {
 	@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Object> registrar(@Valid @RequestBody Tienda obj) {
 		service.registrar(obj);
-		URI location = ServletUriComponentsBuilder
-				.fromCurrentRequest()
-				.path("/{id}")
-				.buildAndExpand(obj.getIdTienda())
+		URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(obj.getIdTienda())
 				.toUri();
 
 		return ResponseEntity.created(location).build();
@@ -92,5 +89,21 @@ public class TiendaController {
 		} else {
 			service.eliminar(id);
 		}
+	}
+
+	@GetMapping("/transacciones")
+	public ResponseEntity<Resource> getFileTransacciones() {
+		String filename = "transacciones.csv";
+		InputStreamResource file = new InputStreamResource(service.transaccionesPorTienda());
+		return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
+				.contentType(MediaType.parseMediaType("application/csv")).body(file);
+	}
+	
+	@GetMapping("/montoVendio")
+	public ResponseEntity<Resource> getFileMontoVendido() {
+		String filename = "montoVendio.csv";
+		InputStreamResource file = new InputStreamResource(service.montoTotalVendido());
+		return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
+				.contentType(MediaType.parseMediaType("application/csv")).body(file);
 	}
 }
