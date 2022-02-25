@@ -1,6 +1,7 @@
 package com.paulg.controller;
 
 import java.net.URI;
+import java.time.LocalDateTime;
 
 import javax.validation.Valid;
 
@@ -19,16 +20,18 @@ import com.paulg.service.IPedidoService;
 @RestController
 @RequestMapping("/pedidos")
 public class PedidosController {
-	
+
 	@Autowired
 	private IPedidoService service;
 
 	@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Object> registrar(@Valid @RequestBody Pedido obj) {
+
+		LocalDateTime now = LocalDateTime.now();
+		obj.setFecha(now);
+
 		service.registrar(obj);
-		URI location = ServletUriComponentsBuilder
-				.fromCurrentRequest().path("/{id}")
-				.buildAndExpand(obj.getIdPedido())
+		URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(obj.getIdPedido())
 				.toUri();
 		return ResponseEntity.created(location).build();
 	}

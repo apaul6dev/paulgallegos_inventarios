@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.paulg.dao.IPedidoDao;
 import com.paulg.dao.IPedidoDetalleDao;
 import com.paulg.dao.IProductoDao;
+import com.paulg.exception.NumberNotValidException;
 import com.paulg.model.Pedido;
 import com.paulg.model.PedidoDetalle;
 import com.paulg.model.Producto;
@@ -34,18 +35,29 @@ public class PedidoServiceImpl implements IPedidoService {
 		t.setPedidoDetalle(null);
 		Pedido p = dao.save(t);
 
-		detalles.forEach(rs -> {
+		for (PedidoDetalle rs : detalles) {
 			rs.setPedido(p);
-
-			Producto producto = productoService.getById(rs.getTiendaProducto().getProducto().getIdProducto());
-			int cantidadProd = producto.getStock() - rs.getCantidad();
-			producto.setStock(cantidadProd);
-			productoService.save(producto);
+			Producto producto = this.stockValido(rs.getTiendaProducto().getProducto().getIdProducto(),rs.getCantidad());
 			rs.getTiendaProducto().setProducto(producto);
-
 			detalleDao.save(rs);
+		}
 
-		});
+	}
+
+	private Producto stockValido(int idProducto, int cantidad) {
+		Producto producto = productoService.getById(idProducto);
+		int cantidadProd = producto.getStock() - cantidad;
+		if (cantidadProd < -10) {
+			throw new NumberNotValidException("Unidades no disponibles (> 10)");
+		} else if (cantidadProd == -10) {
+			int stockTmp = producto.getStock() + 10;
+			producto.setStock(stockTmp);
+			productoService.save(producto);
+			producto.setStock(0);
+		} else {
+			producto.setStock(cantidadProd);
+		}
+		return productoService.save(producto);
 	}
 
 	@Override

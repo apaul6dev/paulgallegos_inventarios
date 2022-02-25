@@ -27,11 +27,13 @@ public class TiendaProductosServiceImpl implements ITiendaProductosService {
 	@Transactional
 	@Override
 	public Tienda registrar(TiendaProductosDTO dto) {
-		Tienda cons = tienda.save(dto.getTienda());		
-		dto.getProductos().forEach(e -> {
+		Tienda cons = tienda.save(dto.getTienda());
+
+		for (Producto e : dto.getProductos()) {
 			Producto p = producto.save(e);
 			tpdao.registrar(dto.getTienda().getIdTienda(), p.getIdProducto());
-		});
+		}
+
 		return cons;
 	}
 }
