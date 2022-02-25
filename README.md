@@ -1,5 +1,7 @@
 # paulgallegos_inventarios
 
+Esta aplicacion fue desarrollada con spring boot y usado postgres como base de datos
+
 #end points para descargar reportes csv
 
 http://localhost:8090/tiendas/transacciones
