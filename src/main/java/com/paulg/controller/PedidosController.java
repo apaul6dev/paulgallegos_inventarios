@@ -19,6 +19,7 @@ import com.paulg.service.IPedidoService;
 @RestController
 @RequestMapping("/pedidos")
 public class PedidosController {
+	
 	@Autowired
 	private IPedidoService service;
 

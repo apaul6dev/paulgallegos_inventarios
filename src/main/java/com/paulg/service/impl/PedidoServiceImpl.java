@@ -9,8 +9,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.paulg.dao.IPedidoDao;
 import com.paulg.dao.IPedidoDetalleDao;
+import com.paulg.dao.IProductoDao;
 import com.paulg.model.Pedido;
 import com.paulg.model.PedidoDetalle;
+import com.paulg.model.Producto;
 import com.paulg.service.IPedidoService;
 
 @Service
@@ -22,15 +24,27 @@ public class PedidoServiceImpl implements IPedidoService {
 	@Autowired
 	private IPedidoDetalleDao detalleDao;
 
+	@Autowired
+	private IProductoDao productoService;
+
 	@Transactional
 	@Override
 	public void registrar(Pedido t) {
 		List<PedidoDetalle> detalles = t.getPedidoDetalle();
 		t.setPedidoDetalle(null);
 		Pedido p = dao.save(t);
+
 		detalles.forEach(rs -> {
 			rs.setPedido(p);
+
+			Producto producto = productoService.getById(rs.getTiendaProducto().getProducto().getIdProducto());
+			int cantidadProd = producto.getStock() - rs.getCantidad();
+			producto.setStock(cantidadProd);
+			productoService.save(producto);
+			rs.getTiendaProducto().setProducto(producto);
+
 			detalleDao.save(rs);
+
 		});
 	}
 
