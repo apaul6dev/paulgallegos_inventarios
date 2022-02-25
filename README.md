@@ -1,0 +1,1 @@
+# paulgallegos_inventarios
