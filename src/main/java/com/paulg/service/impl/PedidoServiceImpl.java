@@ -18,21 +18,20 @@ public class PedidoServiceImpl implements IPedidoService {
 
 	@Autowired
 	private IPedidoDao dao;
+
 	@Autowired
 	private IPedidoDetalleDao detalleDao;
-	
 
 	@Transactional
 	@Override
 	public void registrar(Pedido t) {
-		Pedido p = dao.save(t);
 		List<PedidoDetalle> detalles = t.getPedidoDetalle();
+		t.setPedidoDetalle(null);
+		Pedido p = dao.save(t);
 		detalles.forEach(rs -> {
 			rs.setPedido(p);
-			
 			detalleDao.save(rs);
 		});
-
 	}
 
 	@Override
